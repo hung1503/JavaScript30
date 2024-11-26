@@ -1,23 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Type Ahead 👀</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="https://fav.farm/🔥" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="City or State" />
+      <ul class="suggestions">
+        <li>Filter for a city</li>
+        <li>or a state</li>
+      </ul>
+    </form>
+    <script>
+      const endpoint =
+        "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json";
+      const datas = [];
 
-  <form class="search-form">
-    <input type="text" class="search" placeholder="City or State">
-    <ul class="suggestions">
-      <li>Filter for a city</li>
-      <li>or a state</li>
-    </ul>
-  </form>
-<script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+      fetch(endpoint)
+        .then((blob) => blob.json())
+        .then((data) => datas.push(...data));
+      const searchInput = document.addEventListener("input", displayMatches);
 
-</script>
-</body>
+      function displayMatches(e) {
+        const matchArray = datas.filter((data) => {
+          const regex = new RegExp(e.target.value, "gi");
+          return data.city.match(regex) || data.state.match(regex);
+        });
+        const html = matchArray
+          .map((place) => {
+            const regex = new RegExp(e.target.value, "gi");
+            const cityName = place.city.replace(
+              regex,
+              `<span class="hl">${e.target.value}</span>`
+            );
+            const stateName = place.state.replace(
+              regex,
+              `<span class="hl">${e.target.value}</span>`
+            );
+            return `
+            <li>
+              <span class="name">${cityName}, ${stateName}</span>
+              <span class="population">${numberWithCommas(
+                place.population
+              )}</span>
+            </li>
+          `;
+          })
+          .join("");
+        document.querySelector(".suggestions").innerHTML = html;
+      }
+
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+    </script>
+  </body>
 </html>
